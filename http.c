@@ -1,15 +1,71 @@
 
 #include "http.h"
 
-struct bufof* get_header_value(struct request *req, 
-															 char* header) {
+inline struct bufof* get_dictionary_value(char* buffer,
+																	 struct bufof *dict,
+																	 int no,
+																	 char* key) {
 	int i = 0;
-	for(; i < req->headers_no; i += 2) {
-		if(0 == match(header, req->buffer, req->headers[i])) {
-			return &(req->headers[i + 1]);
+	for(; i < no; i += 2) {
+		if(0 == match(key, buffer, dict[i])) {
+			return &(dict[i + 1]);
 		}
 	}
 	return NULL;
+}
+
+struct bufof* get_post_value(struct request *req, 
+															 char* header) {
+	return get_dictionary_value(req->buffer, req->content_data.post_data, 
+															req->content_data.post_no, header);
+}
+
+struct bufof* get_header_value(struct request *req, 
+															 char* header) {
+	return get_dictionary_value(req->buffer, req->headers, 
+															req->headers_no, header);
+}
+
+void parse_post_data(struct request *req, 
+										 char* buffer) {
+	int place = 0, i = req->content.offset;
+	int sz = req->content.end;
+	
+	do {
+		if(place >= POST_SIZE) {
+			fprintf(stderr, "Post too big");
+			exit(8);
+		}
+
+		// read key
+		req->content_data.post_data[place].offset = i;		
+		while(++i < sz && buffer[i] != '=');
+		req->content_data.post_data[place].end = i; 
+
+		printfromto(buffer, 
+								req->content_data.post_data[place].offset, 
+								req->content_data.post_data[place].end);
+
+		++place;
+
+		// read '='
+		++i;
+		// read value
+		req->content_data.post_data[place].offset = i;
+		while(++i < sz && buffer[i] != '&');
+		req->content_data.post_data[place].end = i; 
+		
+		fprintf(stderr, ": ");
+		printfromto(buffer, 
+								req->content_data.post_data[place].offset, 
+								req->content_data.post_data[place].end);
+		fprintf(stderr, "\n");
+		
+		++place;
+	} while(i < sz);
+
+	req->content_data.post_no = place;
+	fprintf(stderr, "Post vars: %d\n", place / 2);
 }
 
 void parse_request(struct request *req, 
@@ -145,6 +201,10 @@ void parse_request(struct request *req,
 	fprintf(stderr, "i at %d/%d, last header offset at %d\n", 
 					i, sz,
 					req->headers[place - 1].end);
-	fprintf(stderr, "%d headers\n", place);
+	fprintf(stderr, "%d headers\n", place / 2);
+
 	
+	if(0 == match("POST", buffer, req->method)) {
+		parse_post_data(req, buffer);
+	}	
 }

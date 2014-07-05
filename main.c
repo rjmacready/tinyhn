@@ -20,6 +20,7 @@
 // globals per request
 struct request req;
 struct resource req_res;
+struct action req_act;
 
 char* get_title_USER() {
 	return "this is a dynamic page";
@@ -52,12 +53,7 @@ int main(int argc, char** argv) {
 		fprintf(stderr, "Error on getaddrinfo\n");
 		exit(1);
 	}
-	
-	//	if(1 != inet_pton(AF_INET, "0.0.0.0", &(sa.sin_addr))) {
-	//		fprintf(stderr, "Error on inet_pton\n");
-	//		return 1;
-	//	}
- 
+
 	s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	if(-1 == s) {
 		fprintf(stderr, "Error on socket\n");
@@ -165,7 +161,7 @@ int main(int argc, char** argv) {
 			send(cs, "\r\n", 2, 0);
 			send(cs, RSRC_NEWUSER, strlen(RSRC_NEWUSER), 0);
 	
-		} else if(0 == match_and_extract_resource(buffer, &req.resource, &req_res)) {						
+		} else if(0 == match_resource(buffer, &req.resource, &req_res)) {						
 			if(NULL == fcs) {
 				fprintf(stderr, "Error on fdopen\n");
 				exit(8);
@@ -184,6 +180,20 @@ int main(int argc, char** argv) {
 			}
 			fflush(fcs);
 			
+		}else if(0 == match_action(buffer, &req.resource, &req_act)) {						
+			if(NULL == fcs) {
+				fprintf(stderr, "Error on fdopen\n");
+				exit(8);
+			}
+			// do something
+			
+
+			// redirect
+
+			fprintf(fcs, "HTTP/1.1 302 Found\r\n");
+			fprintf(fcs, "Location: /\r\n\r\n");
+			fflush(fcs);
+
 		} else {
 			// 404, static response
 			
