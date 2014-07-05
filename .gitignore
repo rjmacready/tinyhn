@@ -1,10 +1,20 @@
+# temps
+
 *~
+\#*\#
+
+# outs
+
 *.o
-test.*
 generate_template
 generate_resources
 main
-\#*\#
+
+# playground
+
+test.*
+
+# generated
 
 user.[ch]
 index.[ch]
