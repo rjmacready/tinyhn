@@ -165,7 +165,7 @@ int main(int argc, char** argv) {
 			send(cs, "\r\n", 2, 0);
 			send(cs, RSRC_NEWUSER, strlen(RSRC_NEWUSER), 0);
 	
-		} else if(0 == match_and_extract_resource(buffer, req.resource, &req_res)) {						
+		} else if(0 == match_and_extract_resource(buffer, &req.resource, &req_res)) {						
 			if(NULL == fcs) {
 				fprintf(stderr, "Error on fdopen\n");
 				exit(8);

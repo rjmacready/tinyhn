@@ -1,10 +1,23 @@
 
 #include "http.h"
 
+struct bufof* get_header_value(struct request *req, 
+															 char* header) {
+	int i = 0;
+	for(; i < req->headers_no; i += 2) {
+		if(0 == match(header, req->buffer, req->headers[i])) {
+			return &(req->headers[i + 1]);
+		}
+	}
+	return NULL;
+}
+
 void parse_request(struct request *req, 
 									 char* buffer,
 									 size_t sz) {
 	int i = 0;
+	req->buffer = buffer;
+	req->buffer_sz = sz;
 	req->method.offset = 0;
 	while(++i < sz && buffer[i] != ' ');	
 	req->method.end = i;
@@ -41,7 +54,7 @@ void parse_request(struct request *req,
 	
 	int place = 0;
 	do {
-		if(place >= 64) {
+		if(place >= REQ_SIZE) {
 			fprintf(stderr, "Request with too many headers");
 			exit(8);
 		}
@@ -96,6 +109,42 @@ void parse_request(struct request *req,
 		++place;
 	} while(i < sz);	
 
-	fprintf(stderr, "%d headers\n", place);
+	// read \n
+	++i;
 
+	req->headers_no = place;
+	
+	
+	struct bufof *content_length = get_header_value(req, "Content-Length");
+	int i_content_length = 0;
+
+	if(content_length != NULL) {
+		fprintf(stderr, "Content-Length: ");
+		printfromto(buffer, 
+								content_length->offset, 
+								content_length->end);
+		fprintf(stderr, "\n");
+		char* s_content_length = bufoftos(buffer, content_length);
+		{
+			fprintf(stderr, " as string: %s\n", s_content_length);
+			i_content_length = atoi(s_content_length);
+		}
+		free(s_content_length);
+	}
+
+	req->content.offset = i;
+	req->content.end = i + i_content_length;
+
+	fprintf(stderr, "Content: ");
+	printfromto(buffer, 
+								req->content.offset, 
+								req->content.end);
+	fprintf(stderr, "\n");
+	
+	i = sz;
+	fprintf(stderr, "i at %d/%d, last header offset at %d\n", 
+					i, sz,
+					req->headers[place - 1].end);
+	fprintf(stderr, "%d headers\n", place);
+	
 }

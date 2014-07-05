@@ -8,11 +8,11 @@ void printfromto(char* buf, int offset, int end) {
 }
 
 int match_and_extract_resource(char* buf, 
-															 struct bufof bufo, 
+															 struct bufof *bufo, 
 															 struct resource *out) {
 	// match /(letter)/xxxxxxxx
-	size_t buflen = bufo.end - bufo.offset;
-	char* buf_o = buf + bufo.offset;
+	size_t buflen = bufo->end - bufo->offset;
+	char* buf_o = buf + bufo->offset;
 	if(buflen != 1 + 1 + 1 + 8)  { // '/' letter '/' 8 digits
 		return 1;
 	}
@@ -50,4 +50,8 @@ int match(char* str, char* buf, struct bufof bufo) {
 		return -1;
 	}
 	return strncmp(str, buf + bufo.offset, sz);
+}
+
+char* bufoftos(char* buf, struct bufof* bufo) {
+	return strndup(buf + bufo->offset, bufo->end - bufo->offset);
 }
