@@ -1,0 +1,11 @@
+*~
+*.o
+test.*
+generate_template
+generate_resources
+main
+\#*\#
+
+user.[ch]
+index.[ch]
+index2.[ch]
