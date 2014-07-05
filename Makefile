@@ -3,13 +3,13 @@ CFLAGS=-Wall -O3
 
 .PHONY: all clean
 
-TEMPS=index2.h index.h user.*
-OBJ=main.o user.o
+TEMPS=index2.h index.h newuser.h user.c user.h
+OBJ=main.o user.o http.o utils.o
 TARGETS=main generate_resources generate_template
 
 all: $(TARGETS)
 
-main.o: main.c main.h index.h index2.h user.h
+main.o: main.c $(TEMPS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 main: $(OBJ)
@@ -27,8 +27,14 @@ index.h: resources/index.html generate_resources
 index2.h: resources/index2.html generate_resources
 	./generate_resources $< $@
 
+newuser.h: resources/newuser.html generate_resources
+	./generate_resources $< $@
+
 user.o: user.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+#http.o: http.c
+#	$(CC) $(CFLAGS) -c $< -o $@
 
 user.c user.h: resources/user.html generate_template
 	./generate_template $< user
