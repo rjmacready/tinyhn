@@ -9,6 +9,7 @@
 generate_template
 generate_resources
 main
+dbmain
 
 # playground
 
