@@ -28,6 +28,9 @@ struct bufof* get_header_value(struct request *req,
 
 void parse_post_data(struct request *req, 
 										 char* buffer) {
+
+	memset(req, 0, sizeof(struct request));
+	
 	int place = 0, i = req->content.offset;
 	int sz = req->content.end;
 	

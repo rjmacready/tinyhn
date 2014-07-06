@@ -20,3 +20,5 @@ user.[ch]
 index.[ch]
 index2.[ch]
 newuser.[ch]
+*.dat
+*.idx

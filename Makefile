@@ -4,8 +4,9 @@ CFLAGS=-Wall -O3
 .PHONY: all clean
 
 TEMPS=index2.h index.h newuser.h user.c user.h
-OBJ=main.o user.o http.o utils.o
-TARGETS=main generate_resources generate_template
+OBJ=main.o user.o http.o utils.o db.o
+DBOBJ=dbmain.o db.o
+TARGETS=dbmain main generate_resources generate_template
 
 all: $(TARGETS)
 
@@ -13,6 +14,9 @@ main.o: main.c $(TEMPS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 main: $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $^
+
+dbmain: $(DBOBJ)
 	$(CC) $(CFLAGS) -o $@ $^
 
 generate_resources: generate_resources.o
