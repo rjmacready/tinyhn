@@ -29,6 +29,8 @@ int put_in_db(struct db* db, long long *id,
 int get_from_db(struct db* db, long long id, 
 								void** data, size_t* len);
 
+int remove_from_db(struct db* db, long long id);
+
 int close_db(struct db* db);
 
 #endif

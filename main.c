@@ -12,6 +12,7 @@
 #include "utils.h"
 
 // generated
+#include "configs.h"
 #include "index.h"
 #include "index2.h"
 #include "newuser.h"
@@ -49,7 +50,7 @@ int main(int argc, char** argv) {
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 	
-	if(0 != getaddrinfo(NULL, "8080", &hints, &res)) {
+	if(0 != getaddrinfo(NULL, CONFIG_port, &hints, &res)) {
 		fprintf(stderr, "Error on getaddrinfo\n");
 		exit(1);
 	}

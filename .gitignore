@@ -8,6 +8,7 @@
 *.o
 generate_template
 generate_resources
+generate_config
 main
 dbmain
 
@@ -21,5 +22,6 @@ user.[ch]
 index.[ch]
 index2.[ch]
 newuser.[ch]
+configs.[ch]
 *.dat
 *.idx

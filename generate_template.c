@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 #include "header_utils.h"
 
 int main(int argc, char** argv) {

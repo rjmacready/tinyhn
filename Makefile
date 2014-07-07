@@ -3,10 +3,10 @@ CFLAGS=-Wall -O3
 
 .PHONY: all clean
 
-TEMPS=index2.h index.h newuser.h user.c user.h
+TEMPS=index2.h index.h newuser.h user.c user.h configs.h
 OBJ=main.o user.o http.o utils.o db.o
 DBOBJ=dbmain.o db.o
-TARGETS=dbmain main generate_resources generate_template
+TARGETS=dbmain main generate_resources generate_template generate_config
 
 all: $(TARGETS)
 
@@ -25,6 +25,9 @@ generate_resources: generate_resources.o
 generate_template: generate_template.o
 	$(CC) $(CFLAGS) -o $@ $^
 
+generate_config: generate_config.o
+	$(CC) $(CFLAGS) -o $@ $^
+
 index.h: resources/index.html generate_resources
 	./generate_resources $< $@
 
@@ -33,6 +36,9 @@ index2.h: resources/index2.html generate_resources
 
 newuser.h: resources/newuser.html generate_resources
 	./generate_resources $< $@
+
+configs.h: configs.csv generate_config
+	./generate_config $<
 
 user.o: user.c
 	$(CC) $(CFLAGS) -c $< -o $@
