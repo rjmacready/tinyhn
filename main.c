@@ -119,6 +119,10 @@ int main(int argc, char** argv) {
 	
 	int i = 0;
 	FILE* fcs = fdopen(cs, "w");
+	if(NULL == fcs) {
+		fprintf(stderr, "Error on fdopen\n");
+		exit(8);
+	}
 
 	parse_request(&req, buffer, sz);	
 
@@ -133,41 +137,33 @@ int main(int argc, char** argv) {
 		// else, 404
 		
 		if(0 == match("/", buffer, req.resource)) {
-			// static 
+			fprintf(fcs, "HTTP/1.1 200 OK\r\n");
+			fprintf(fcs, "Content-Type: text/html; charset=us-ascii\r\n");
+			struct resp_string* resp; int resp_no;
 			
-			char* c0 = "HTTP/1.1 200 OK\r\n";
-			char* c1 = "Content-Type: text/html; charset=us-ascii\r\n";
-			char* c2 = malloc(sizeof(char) * 30);
-			snprintf(c2, sizeof(char) * 30, "Content-Length: %d\r\n", strlen(RSRC_INDEX));
-	
-			send(cs, c0, strlen(c0), 0);
-			send(cs, c1, strlen(c1), 0);
-			send(cs, c2, strlen(c2), 0);
+			int written = resource_INDEX(&resp, &resp_no);
+			fprintf(fcs, "Content-Length: %d\r\n\r\n", written);
+			
+			for(i = 0; i < resp_no; ++i) {
+				fprintf(fcs, "%s", resp[i].buffer);
+			}
+			fflush(fcs);
 
-			send(cs, "\r\n", 2, 0);
-			send(cs, RSRC_INDEX, strlen(RSRC_INDEX), 0);
-	
 		} else if(0 == match("/n", buffer, req.resource)) {
-			// static 
-			
-			char* c0 = "HTTP/1.1 200 OK\r\n";
-			char* c1 = "Content-Type: text/html; charset=us-ascii\r\n";
-			char* c2 = malloc(sizeof(char) * 30);
-			snprintf(c2, sizeof(char) * 30, "Content-Length: %d\r\n", strlen(RSRC_NEWUSER));
-	
-			send(cs, c0, strlen(c0), 0);
-			send(cs, c1, strlen(c1), 0);
-			send(cs, c2, strlen(c2), 0);
 
-			send(cs, "\r\n", 2, 0);
-			send(cs, RSRC_NEWUSER, strlen(RSRC_NEWUSER), 0);
+			fprintf(fcs, "HTTP/1.1 200 OK\r\n");
+			fprintf(fcs, "Content-Type: text/html; charset=us-ascii\r\n");
+			struct resp_string* resp; int resp_no;
+			
+			int written = resource_NEWUSER(&resp, &resp_no);
+			fprintf(fcs, "Content-Length: %d\r\n\r\n", written);
+			
+			for(i = 0; i < resp_no; ++i) {
+				fprintf(fcs, "%s", resp[i].buffer);
+			}
+			fflush(fcs);
 	
 		} else if(0 == match_resource(buffer, &req.resource, &req_res)) {						
-			if(NULL == fcs) {
-				fprintf(stderr, "Error on fdopen\n");
-				exit(8);
-			}
-			
 			
 			fprintf(fcs, "HTTP/1.1 200 OK\r\n");
 			fprintf(fcs, "Content-Type: text/html; charset=us-ascii\r\n");
@@ -182,12 +178,6 @@ int main(int argc, char** argv) {
 			fflush(fcs);
 			
 		}else if(0 == match_action(buffer, &req.resource, &req_act)) {						
-			if(NULL == fcs) {
-				fprintf(stderr, "Error on fdopen\n");
-				exit(8);
-			}
-			// do something
-			
 
 			// redirect
 
@@ -196,20 +186,17 @@ int main(int argc, char** argv) {
 			fflush(fcs);
 
 		} else {
-			// 404, static response
+			fprintf(fcs, "HTTP/1.1 404 Not Found\r\n");
+			fprintf(fcs, "Content-Type: text/html; charset=us-ascii\r\n");
+			struct resp_string* resp; int resp_no;
 			
-			char* c0 = "HTTP/1.1 404 Not Found\r\n";
-			char* c1 = "Content-Type: text/html; charset=us-ascii\r\n";
-			char* c2 = malloc(sizeof(char) * 30);
-			snprintf(c2, sizeof(char) * 30, "Content-Length: %d\r\n", strlen(RSRC_INDEX));
-	
-			send(cs, c0, strlen(c0), 0);
-			send(cs, c1, strlen(c1), 0);
-			send(cs, c2, strlen(c2), 0);
-
-			send(cs, "\r\n", 2, 0);
-			send(cs, RSRC_INDEX2, strlen(RSRC_INDEX2), 0);
+			int written = resource_INDEX2(&resp, &resp_no);
+			fprintf(fcs, "Content-Length: %d\r\n\r\n", written);
 			
+			for(i = 0; i < resp_no; ++i) {
+				fprintf(fcs, "%s", resp[i].buffer);
+			}
+			fflush(fcs);
 		}
 	}
 

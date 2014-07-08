@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
 	fprintf(c_file, "#include <string.h>\n\n");
 	fprintf(c_file, "#include \"response.h\"\n\n");
 
-	fprintf(c_file, "const char RSC_0[] = {\n\t");	
+	fprintf(c_file, "char RSC_%s_0[] = {\n\t", h_const);	
 	modes[mode_i++] = mode;
 	
 	while(fread(&c, sizeof(char), 1, f)) {
@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
 			} else if(mode == 1) {
 				// Enter html mode
 				++fn_i;
-				fprintf(c_file, "const char RSC_%d[] = {\n\t", fn_i);	
+				fprintf(c_file, "char RSC_%s_%d[] = {\n\t", h_const, fn_i);	
 				mode = 0;
 			}
 			modes[mode_i++] = mode;
@@ -90,8 +90,8 @@ int main(int argc, char** argv) {
 	
 	fprintf(c_file, "0x0};\n\n");
 
-	fprintf(h_file, "#ifndef _%s_H_\n", h_const);
-	fprintf(h_file, "#define _%s_H_\n\n", h_const);
+	fprintf(h_file, "#ifndef _RSC_%s_H_\n", h_const);
+	fprintf(h_file, "#define _RSC_%s_H_\n\n", h_const);
 	fprintf(h_file, "#include \"response.h\"\n\n");
 	fprintf(h_file, "int resource_%s(struct resp_string** r, int* resp_no);\n", h_const);
 	
@@ -112,28 +112,31 @@ int main(int argc, char** argv) {
 	}
 	
 	fprintf(c_file, "int resource_%s(struct resp_string** resp, int* resp_no) {\n", h_const);
-	fprintf(c_file, "\t*resp = (struct resp_string*) malloc(sizeof(struct resp_string) * %d);\n",
+	fprintf(c_file, 
+					"\tstruct resp_string* o = "
+					"(struct resp_string*) malloc(sizeof(struct resp_string) * %d);\n",
 					mode_i + fn_i);
 	
-	fprintf(c_file, "\tint r = 0;\n");
+	fprintf(c_file, "\tint count = 0;\n");
 	for(i_f = 0, i_h = 0, i = 0; i < mode_i; ++i) {
+		fprintf(c_file, "\n");
 		if(modes[i] == 0) {
 			// html
-			fprintf(c_file, "\t(*(*resp + %d)).buffer = RSC_%d;\n", i, i_h);
-			fprintf(c_file, "\t(*(*resp + %d)).len = %d;\n", i, h_len[i_h]);
-			fprintf(c_file, "\tr += %d;\n", h_len[i_h]);
+			fprintf(c_file, "\to[%d].buffer = RSC_%s_%d;\n", i, h_const, i_h);
+			fprintf(c_file, "\to[%d].len = %d;\n", i, h_len[i_h]);
+			fprintf(c_file, "\tcount += %d;\n", h_len[i_h]);
 			++i_h;
 		} else if(modes[i] == 1) {
 			// C
-			fprintf(c_file, "\t(*(*resp + %d)).buffer = %s_%s();\n", i, fns[i_f], h_const);
-			fprintf(c_file, "\t(*(*resp + %d)).len = strlen((*(*resp + %d)).buffer);\n", i, i);
-			fprintf(c_file, "\tr += (*(*resp + %d)).len;\n", i);
+			fprintf(c_file, "\to[%d].buffer = %s_%s();\n", i, fns[i_f], h_const);
+			fprintf(c_file, "\to[%d].len = strlen(o[%d].buffer);\n", i, i);
+			fprintf(c_file, "\tcount += o[%d].len;\n", i);
 			++i_f;
 		}
-		
 	}
+	fprintf(c_file, "\t*resp = o;\n");
 	fprintf(c_file, "\t*resp_no = %d;\n", i);
-	fprintf(c_file, "\treturn r;\n");
+	fprintf(c_file, "\treturn count;\n");
 	fprintf(c_file, "}\n");
 	
 	fprintf(h_file, "#endif\n");

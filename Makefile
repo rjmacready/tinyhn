@@ -3,8 +3,8 @@ CFLAGS=-Wall -O3
 
 .PHONY: all clean
 
-TEMPS=index2.h index.h newuser.h user.c user.h configs.h
-OBJ=main.o user.o http.o utils.o db.o
+TEMPS=index2.c index2.h index.c index.h newuser.c newuser.h user.c user.h configs.h
+OBJ=main.o http.o utils.o db.o user.o index.o index2.o newuser.o
 DBOBJ=dbmain.o db.o
 TARGETS=dbmain main generate_resources generate_template generate_config
 
@@ -28,20 +28,26 @@ generate_template: generate_template.o
 generate_config: generate_config.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-index.h: resources/index.html generate_resources
-	./generate_resources $< $@
+#user.o: user.c
+#	$(CC) $(CFLAGS) -c $< -o $@
+#
+#user.o: user.c
+#	$(CC) $(CFLAGS) -c $< -o $@
+#
+#user.o: user.c
+#	$(CC) $(CFLAGS) -c $< -o $@
 
-index2.h: resources/index2.html generate_resources
-	./generate_resources $< $@
+index.c index.h: resources/index.html generate_template
+	./generate_template $< index
 
-newuser.h: resources/newuser.html generate_resources
-	./generate_resources $< $@
+index2.c index2.h: resources/index2.html generate_template
+	./generate_template $< index2
+
+newuser.c newuser.h: resources/newuser.html generate_template
+	./generate_template $< newuser
 
 configs.h: configs.csv generate_config
 	./generate_config $<
-
-user.o: user.c
-	$(CC) $(CFLAGS) -c $< -o $@
 
 #http.o: http.c
 #	$(CC) $(CFLAGS) -c $< -o $@
