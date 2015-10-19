@@ -18,6 +18,9 @@
 #include "newuser.h"
 #include "user.h"
 
+// controllers
+#include "user_controllers.h"
+
 // globals per request
 struct request req;
 struct resource req_res;
@@ -126,16 +129,7 @@ int main(int argc, char** argv) {
 
 	parse_request(&req, buffer, sz);	
 
-	{
-		// routing tests
-		// /            (dynamic)
-		// /u?id=xxx (dynamic)
-		// /l?id=xxx (dynamic)
-		
-		// static files
-
-		// else, 404
-		
+	{ 		
 		if(0 == match("/", buffer, req.resource)) {
 			fprintf(fcs, "HTTP/1.1 200 OK\r\n");
 			fprintf(fcs, "Content-Type: text/html; charset=us-ascii\r\n");
@@ -163,7 +157,7 @@ int main(int argc, char** argv) {
 			}
 			fflush(fcs);
 	
-		} else if(0 == match_resource(buffer, &req.resource, &req_res)) {						
+		} else if(0 == match_resource(buffer, &req.resource, &req_res)) {
 			
 			fprintf(fcs, "HTTP/1.1 200 OK\r\n");
 			fprintf(fcs, "Content-Type: text/html; charset=us-ascii\r\n");
@@ -177,10 +171,14 @@ int main(int argc, char** argv) {
 			}
 			fflush(fcs);
 			
-		}else if(0 == match_action(buffer, &req.resource, &req_act)) {						
+		} else if (0 == match_action(buffer, &req.resource, &req_act)) {
+			// ...
+			
+			if(req_act.type == 'u' && req_act.type == 'c') {
+				ACTION_user_create(&req);
+			}
 
 			// redirect
-
 			fprintf(fcs, "HTTP/1.1 302 Found\r\n");
 			fprintf(fcs, "Location: /\r\n\r\n");
 			fflush(fcs);

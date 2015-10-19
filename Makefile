@@ -1,5 +1,5 @@
 
-CFLAGS=-Wall -O3
+CFLAGS=-Wall -Wextra -O3
 
 .PHONY: all clean
 
